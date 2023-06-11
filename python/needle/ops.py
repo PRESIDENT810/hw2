@@ -326,7 +326,7 @@ class ReLU(TensorOp):
         a = node.inputs[0]
         if isinstance(a, Tensor):
             a = a.realize_cached_data()
-        return out_grad * Tensor(array_api.where(a < 0, 0, 1))
+        return out_grad * Tensor(array_api.where(a <= 0, 0, 1))
 
 
 def relu(a):
