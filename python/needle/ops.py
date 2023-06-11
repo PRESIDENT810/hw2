@@ -148,7 +148,7 @@ class PowerScalar(TensorOp):
 
     def gradient(self, out_grad, node):
         a = node.inputs[0]
-        return out_grad * (self.scalar * array_api.power(a, self.scalar-1))
+        return self.scalar * array_api.power(a, self.scalar-1) * out_grad
 
 
 def power_scalar(a, scalar):
