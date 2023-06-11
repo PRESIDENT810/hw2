@@ -130,7 +130,7 @@ class MulScalar(TensorOp):
         return a * self.scalar
 
     def gradient(self, out_grad: Tensor, node: Tensor):
-        return (out_grad * self.scalar,)
+        return out_grad * self.scalar
 
 
 def mul_scalar(a, scalar):
@@ -147,9 +147,8 @@ class PowerScalar(TensorOp):
         return array_api.power(a, self.scalar)
 
     def gradient(self, out_grad, node):
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        a = node.inputs[0]
+        return out_grad * (self.scalar * array_api.power(a, self.scalar-1))
 
 
 def power_scalar(a, scalar):
@@ -180,7 +179,7 @@ class DivScalar(TensorOp):
 
     def gradient(self, out_grad, node):
         a: Tensor = node.inputs[0]
-        return (Tensor(np.ones(a.shape)) / self.scalar) * out_grad
+        return (Tensor(array_api.ones(a.shape)) / self.scalar) * out_grad
 
 
 def divide_scalar(a, scalar):
@@ -192,7 +191,7 @@ class Transpose(TensorOp):
         self.axes = axes
 
     def compute(self, a: NDArray) -> NDArray:
-        axes: NDArray = np.arange(len(a.shape))
+        axes: NDArray = array_api.arange(len(a.shape))
         if self.axes is not None:
             axes[self.axes[0]], axes[self.axes[1]] = axes[self.axes[1]], axes[self.axes[0]]
         else:
@@ -286,7 +285,7 @@ class Negate(TensorOp):
 
     def gradient(self, out_grad, node):
         a = node.inputs[0]
-        return -1 * out_grad * Tensor(np.ones(a.shape))
+        return -1 * out_grad * Tensor(array_api.ones(a.shape))
 
 
 def negate(a):
@@ -321,13 +320,13 @@ def exp(a):
 
 class ReLU(TensorOp):
     def compute(self, a) -> NDArray:
-        return np.maximum(0, a)
+        return array_api.maximum(0, a)
 
     def gradient(self, out_grad, node):
         a = node.inputs[0]
         if isinstance(a, Tensor):
             a = a.realize_cached_data()
-        return out_grad * Tensor(np.where(a < 0, 0, 1))
+        return out_grad * Tensor(array_api.where(a < 0, 0, 1))
 
 
 def relu(a):

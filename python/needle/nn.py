@@ -1,6 +1,6 @@
 """The module.
 """
-from typing import List, Callable, Any
+from typing import List, Callable, Any, Optional
 from needle.autograd import Tensor
 from needle import ops
 import needle.init as init
@@ -82,19 +82,28 @@ class Identity(Module):
 
 
 class Linear(Module):
+    in_features: int
+    out_features: int
+    weight: Tensor
+    bias: Optional[Tensor]
+
     def __init__(self, in_features, out_features, bias=True, device=None, dtype="float32"):
         super().__init__()
         self.in_features = in_features
         self.out_features = out_features
 
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        # Initialize weights using Kaiming initialization
+        self.weight = init.kaiming_uniform(in_features, out_features)
+        if bias:
+            self.bias = init.kaiming_uniform(out_features, 1).reshape((1, out_features))
+        else:
+            self.bias = None
 
     def forward(self, X: Tensor) -> Tensor:
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        y = X @ self.weight
+        if self.bias is None:
+            return y
+        return y + self.bias
 
 
 
