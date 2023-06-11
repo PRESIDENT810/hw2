@@ -120,14 +120,14 @@ class ReLU(Module):
 
 
 class Sequential(Module):
-    def __init__(self, *modules):
+    def __init__(self, *modules: Module):
         super().__init__()
         self.modules = modules
 
     def forward(self, x: Tensor) -> Tensor:
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        for mod in self.modules:
+            x = mod(x)
+        return x
 
 
 class SoftmaxLoss(Module):
