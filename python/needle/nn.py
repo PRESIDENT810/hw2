@@ -49,8 +49,6 @@ def _child_modules(value: object) -> List["Module"]:
         return []
 
 
-
-
 class Module:
     def __init__(self):
         self.training = True
@@ -106,7 +104,6 @@ class Linear(Module):
         return y + self.bias
 
 
-
 class Flatten(Module):
     def forward(self, X):
         ### BEGIN YOUR SOLUTION
@@ -137,7 +134,6 @@ class SoftmaxLoss(Module):
         return (loss - y_onehot.sum(axes=1)).sum() / logits.shape[0]
 
 
-
 class BatchNorm1d(Module):
     def __init__(self, dim, eps=1e-5, momentum=0.1, device=None, dtype="float32"):
         super().__init__()
@@ -148,7 +144,6 @@ class BatchNorm1d(Module):
         raise NotImplementedError()
         ### END YOUR SOLUTION
 
-
     def forward(self, x: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
         raise NotImplementedError()
@@ -156,22 +151,42 @@ class BatchNorm1d(Module):
 
 
 class LayerNorm1d(Module):
+    weight: Tensor
+    bias: Tensor
+    dim: int
+    eps: float
+
     def __init__(self, dim, eps=1e-5, device=None, dtype="float32"):
         super().__init__()
         self.dim = dim
         self.eps = eps
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        self.weight = init.ones(1, dim)
+        self.bias = init.zeros(1, dim)
 
     def forward(self, x: Tensor) -> Tensor:
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        mean = ops.summation(x, axes=1)
+        mean = mean / x.shape[1]
+        mean = mean.reshape((mean.shape[0], 1))
+        mean = ops.broadcast_to(mean, x.shape)
+        var = x - mean
+        var = ops.power_scalar(var, 2)
+        var = ops.summation(var, 1)
+        var = var.reshape((var.shape[0], 1))
+        var = var / x.shape[1]
+        var = var + self.eps
+        var = ops.power_scalar(var, 0.5)
+        var = ops.broadcast_to(var, x.shape)
+        y = x - mean
+        y = y / var
+        weight = ops.broadcast_to(self.weight, x.shape)
+        bias = ops.broadcast_to(self.bias, x.shape)
+        y = y * weight
+        y = y + bias
+        return y
 
 
 class Dropout(Module):
-    def __init__(self, p = 0.5):
+    def __init__(self, p=0.5):
         super().__init__()
         self.p = p
 
@@ -190,6 +205,3 @@ class Residual(Module):
         ### BEGIN YOUR SOLUTION
         raise NotImplementedError()
         ### END YOUR SOLUTION
-
-
-
