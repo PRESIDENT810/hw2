@@ -352,12 +352,17 @@ class LogSumExp(TensorOp):
 
     def gradient(self, out_grad, node):
         # TODO: WHAT THE FUCK IS THIS?
+        # All I know is this is a trick:
+        # https://stats.stackexchange.com/questions/338285/how-does-the-subtraction-of-the-logit-maximum-improve-learning
         Z = node.inputs[0]
         if self.axes:
             shape = [1] * len(Z.shape)
             j = 0
             for i in range(len(shape)):
-                if i not in self.axes:
+                if isinstance(self.axes, tuple) and i not in self.axes:
+                    shape[i] = node.shape[j]
+                    j += 1
+                if isinstance(self.axes, int) and i != self.axes:
                     shape[i] = node.shape[j]
                     j += 1
             node_new = node.reshape(shape)
