@@ -106,9 +106,14 @@ class Linear(Module):
 
 class Flatten(Module):
     def forward(self, X):
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        shape = X.shape
+        if len(shape) == 1:
+            return X
+        total = 1
+        for dim in X.shape:
+            total *= dim
+        return ops.reshape(X, (shape[0], int(total / shape[0])))
+
 
 
 class ReLU(Module):
