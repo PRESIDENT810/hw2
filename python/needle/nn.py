@@ -140,19 +140,48 @@ class SoftmaxLoss(Module):
 
 
 class BatchNorm1d(Module):
+    weight: Tensor
+    bias: Tensor
+    running_mean: ops.NDArray
+    running_var: ops.NDArray
+
     def __init__(self, dim, eps=1e-5, momentum=0.1, device=None, dtype="float32"):
         super().__init__()
         self.dim = dim
         self.eps = eps
         self.momentum = momentum
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        self.weight = init.ones(1, dim, requires_grad=True)
+        self.bias = init.zeros(1, dim, requires_grad=True)
+        self.running_mean = init.zeros(1, dim)
+        self.running_var = init.ones(1, dim)
 
     def forward(self, x: Tensor) -> Tensor:
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        mean = ops.summation(x, axes=0)
+        mean = mean / x.shape[0]
+        # BatchNorm uses the running estimates of mean and variance instead of batch statistics at test time
+        mean = mean.reshape((1, mean.shape[0]))
+        var = x - ops.broadcast_to(mean, x.shape)
+        var = ops.power_scalar(var, 2)
+        var = ops.summation(var, 0)
+        var = var.reshape((1, var.shape[0]))
+        var = var / x.shape[0]
+
+        if self.training:  # Training phase
+            self.running_mean = (self.running_mean * (1 - self.momentum) + mean * self.momentum).reshape(self.dim)
+            self.running_var = (self.running_var * (1 - self.momentum) + var * self.momentum).reshape(self.dim)
+        else:  # Testing phase
+            mean = self.running_mean
+            var = self.running_var
+
+        var = var + self.eps
+        var = ops.power_scalar(var, 0.5)
+        y = x - ops.broadcast_to(mean, x.shape)
+        y = y / ops.broadcast_to(var, x.shape)
+        weight = ops.broadcast_to(self.weight, x.shape)
+        bias = ops.broadcast_to(self.bias, x.shape)
+        y = y * weight
+        y = y + bias
+        return y
 
 
 class LayerNorm1d(Module):
