@@ -150,8 +150,8 @@ class BatchNorm1d(Module):
         self.dim = dim
         self.eps = eps
         self.momentum = momentum
-        self.weight = init.ones(1, dim, requires_grad=True)
-        self.bias = init.zeros(1, dim, requires_grad=True)
+        self.weight = init.ones(1, dim)
+        self.bias = init.zeros(1, dim)
         self.running_mean = init.zeros(1, dim)
         self.running_var = init.ones(1, dim)
 
@@ -225,9 +225,11 @@ class Dropout(Module):
         self.p = p
 
     def forward(self, x: Tensor) -> Tensor:
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        if not self.training:  # Testing phase
+            return x
+        else:  # Training phase
+            mask = init.randb(*x.shape) / (1-self.p)
+            return x * mask
 
 
 class Residual(Module):
