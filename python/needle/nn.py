@@ -152,8 +152,8 @@ class BatchNorm1d(Module):
         self.momentum = momentum
         self.weight = Parameter(init.ones(1, dim))
         self.bias = Parameter(init.zeros(1, dim))
-        self.running_mean = init.zeros(1, dim)
-        self.running_var = init.ones(1, dim)
+        self.running_mean = init.zeros(1, dim).reshape(dim)
+        self.running_var = init.ones(1, dim).reshape(dim)
 
     def forward(self, x: Tensor) -> Tensor:
         mean = ops.summation(x, axes=0)
@@ -165,14 +165,17 @@ class BatchNorm1d(Module):
         var = ops.summation(var, 0)
         var = var.reshape((1, var.shape[0]))
         var = var / x.shape[0]
+        running_mean = self.running_mean.reshape((1, self.dim))
+        running_var = self.running_var.reshape((1, self.dim))
 
         if self.training:  # Training phase
-            self.running_mean = (self.running_mean * (1 - self.momentum) + mean * self.momentum).reshape(self.dim)
-            self.running_var = (self.running_var * (1 - self.momentum) + var * self.momentum).reshape(self.dim)
+            running_mean = (running_mean * (1 - self.momentum) + mean * self.momentum)
+            running_var = (running_var * (1 - self.momentum) + var * self.momentum)
         else:  # Testing phase
             mean = self.running_mean
             var = self.running_var
-
+        self.running_mean = running_mean.reshape(self.dim)
+        self.running_var = running_var.reshape(self.dim)
         var = var + self.eps
         var = ops.power_scalar(var, 0.5)
         y = x - ops.broadcast_to(mean, x.shape)
