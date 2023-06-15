@@ -2,6 +2,9 @@
 # Global operator table.
 from numbers import Number
 from typing import Optional, List
+
+import numpy as np
+
 from .autograd import NDArray
 from .autograd import Op, Tensor, Value, TensorOp
 from .autograd import TensorTuple, TensorTupleOp
@@ -84,6 +87,7 @@ def reduce_as(input_shape: list, output_shape: list, tensor: Tensor):
 
 class EWiseAdd(TensorOp):
     def compute(self, a: NDArray, b: NDArray):
+        assert(a.shape == b.shape)
         return a + b
 
     def gradient(self, out_grad: Tensor, node: Tensor):
@@ -111,6 +115,7 @@ def add_scalar(a, scalar):
 
 class EWiseMul(TensorOp):
     def compute(self, a: NDArray, b: NDArray):
+        assert (a.shape == b.shape)
         return a * b
 
     def gradient(self, out_grad: Tensor, node: Tensor):
@@ -159,6 +164,7 @@ class EWiseDiv(TensorOp):
     """Op to element-wise divide two nodes."""
 
     def compute(self, a: NDArray, b: NDArray) -> NDArray:
+        assert (a.shape == b.shape)
         return a / b
 
     def gradient(self, out_grad, node: Tensor):
@@ -370,7 +376,7 @@ class LogSumExp(TensorOp):
         else:
             node_new = node
             grad_new = out_grad
-        return grad_new * exp(Z - node_new)
+        return grad_new.broadcast_to(Z.shape) * exp(Z - node_new.broadcast_to(Z.shape))
 
 
 def logsumexp(a, axes=None):
