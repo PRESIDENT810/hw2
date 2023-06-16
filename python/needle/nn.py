@@ -174,8 +174,8 @@ class BatchNorm1d(Module):
         else:  # Testing phase
             mean = self.running_mean
             var = self.running_var
-        self.running_mean = running_mean.reshape(self.dim)
-        self.running_var = running_var.reshape(self.dim)
+        self.running_mean = running_mean.reshape(self.dim).detach()
+        self.running_var = running_var.reshape(self.dim).detach()
         var = var + self.eps
         var = ops.power_scalar(var, 0.5)
         y = x - ops.broadcast_to(mean, x.shape)
