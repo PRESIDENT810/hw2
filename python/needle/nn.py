@@ -91,9 +91,9 @@ class Linear(Module):
         self.out_features = out_features
 
         # Initialize weights using Kaiming initialization
-        self.weight = Parameter(init.kaiming_uniform(in_features, out_features), dtype=dtype)
+        self.weight = Parameter(init.kaiming_uniform(in_features, out_features, requires_grad=True, dtype=dtype))
         if bias:
-            self.bias = Parameter(init.kaiming_uniform(out_features, 1).reshape((1, out_features)), dtype=dtype)
+            self.bias = Parameter(init.kaiming_uniform(out_features, 1, requires_grad=True, dtype=dtype).reshape((1, out_features)))
         else:
             self.bias = None
 
@@ -150,10 +150,10 @@ class BatchNorm1d(Module):
         self.dim = dim
         self.eps = eps
         self.momentum = momentum
-        self.weight = Parameter(init.ones(1, dim))
-        self.bias = Parameter(init.zeros(1, dim))
-        self.running_mean = init.zeros(1, dim).reshape(dim)
-        self.running_var = init.ones(1, dim).reshape(dim)
+        self.weight = Parameter(init.ones(1, dim, requires_grad=True))
+        self.bias = Parameter(init.zeros(1, dim, requires_grad=True))
+        self.running_mean = init.zeros(1, dim, requires_grad=True).reshape(dim)
+        self.running_var = init.ones(1, dim, requires_grad=True).reshape(dim)
 
     def forward(self, x: Tensor) -> Tensor:
         mean = ops.summation(x, axes=0)
@@ -180,10 +180,8 @@ class BatchNorm1d(Module):
         var = ops.power_scalar(var, 0.5)
         y = x - ops.broadcast_to(mean, x.shape)
         y = y / ops.broadcast_to(var, x.shape)
-        weight = Parameter(ops.broadcast_to(self.weight, x.shape))
-        bias = Parameter(ops.broadcast_to(self.bias, x.shape))
-        y = y * weight
-        y = y + bias.broadcast_to(y.shape)
+        y = y * self.weight.broadcast_to(x.shape)
+        y = y + self.bias.broadcast_to(y.shape)
         return y
 
 
@@ -197,8 +195,8 @@ class LayerNorm1d(Module):
         super().__init__()
         self.dim = dim
         self.eps = eps
-        self.weight = Parameter(init.ones(1, dim))
-        self.bias = Parameter(init.zeros(1, dim))
+        self.weight = Parameter(init.ones(1, dim, requires_grad=True))
+        self.bias = Parameter(init.zeros(1, dim, requires_grad=True))
 
     def forward(self, x: Tensor) -> Tensor:
         mean = ops.summation(x, axes=1)
@@ -215,10 +213,8 @@ class LayerNorm1d(Module):
         var = ops.broadcast_to(var, x.shape)
         y = x - mean
         y = y / var
-        weight = Parameter(ops.broadcast_to(self.weight, x.shape))
-        bias = Parameter(ops.broadcast_to(self.bias, x.shape))
-        y = y * weight
-        y = y + bias.broadcast_to(y.shape)
+        y = y * self.weight.broadcast_to(x.shape)
+        y = y + self.bias.broadcast_to(y.shape)
         return y
 
 

@@ -41,6 +41,10 @@ class SGD(Optimizer):
 
 
 class Adam(Optimizer):
+    params: List[ndl.nn.Parameter]
+    m: Dict[int, Union[int, ndl.Tensor]]
+    v: Dict[int, Union[int, ndl.Tensor]]
+
     def __init__(
         self,
         params,
@@ -56,12 +60,24 @@ class Adam(Optimizer):
         self.beta2 = beta2
         self.eps = eps
         self.weight_decay = weight_decay
-        self.t = 0
+        self.t = 1
 
         self.m = {}
         self.v = {}
+        for i, param in enumerate(self.params):
+            self.m[i] = 0
+            self.v[i] = 0
 
     def step(self):
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        for i, param in enumerate(self.params):
+            grad = ndl.Tensor(param.grad, dtype=param.dtype) + self.weight_decay * param.data
+            assert(grad.shape == param.shape)
+            self.m[i] = (1 - self.beta1) * grad + self.beta1 * self.m[i]
+            self.v[i] = (1 - self.beta2) * grad ** 2 + self.beta2 * self.v[i]
+            m_bar = self.m[i] / (1 - self.beta1 ** self.t)
+            v_bar = self.v[i] / (1 - self.beta2 ** self.t)
+            self.params[i].data = param - self.lr * m_bar / (v_bar ** 0.5 + self.eps)
+            self.params[i].detach()
+            self.m[i].detach()
+            self.v[i].detach()
+        self.t += 1

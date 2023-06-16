@@ -46,23 +46,23 @@ def one_hot(n, i, device=None, dtype="float32", requires_grad=False):
     return ndl.Tensor(device.one_hot(n, i.numpy(), dtype=dtype), device=device, requires_grad=requires_grad)
 
 
-def xavier_uniform(fan_in, fan_out, gain=1.0, **kwargs):
+def xavier_uniform(fan_in, fan_out, gain=1.0, dtype="float32", **kwargs):
     a = gain * ((6 / (fan_in + fan_out)) ** 0.5)
-    return rand(fan_in, fan_out, low=-a, high=a)
+    return rand(fan_in, fan_out, low=-a, high=a, dtype=dtype)
 
 
-def xavier_normal(fan_in, fan_out, gain=1.0, **kwargs):
+def xavier_normal(fan_in, fan_out, gain=1.0, dtype="float32", **kwargs):
     std = gain * ((2 / (fan_in + fan_out)) ** 0.5)
-    return randn(fan_in, fan_out, std=std)
+    return randn(fan_in, fan_out, std=std, dtype=dtype)
 
 
-def kaiming_uniform(fan_in, fan_out, nonlinearity="relu", **kwargs):
+def kaiming_uniform(fan_in, fan_out, nonlinearity="relu", dtype="float32", **kwargs):
     assert nonlinearity == "relu", "Only relu supported currently"
     bound = (2 ** 0.5) * ((3 / fan_in) ** 0.5)
-    return rand(fan_in, fan_out, low=-bound, high=bound)
+    return rand(fan_in, fan_out, low=-bound, high=bound, dtype=dtype)
 
 
-def kaiming_normal(fan_in, fan_out, nonlinearity="relu", **kwargs):
+def kaiming_normal(fan_in, fan_out, nonlinearity="relu", dtype="float32", **kwargs):
     assert nonlinearity == "relu", "Only relu supported currently"
     std = (2 / fan_in) ** 0.5
-    return randn(fan_in, fan_out, std=std)
+    return randn(fan_in, fan_out, std=std, dtype=dtype)
