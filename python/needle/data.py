@@ -103,20 +103,23 @@ class DataLoader:
         self.dataset = dataset
         self.shuffle = shuffle
         self.batch_size = batch_size
-        if not self.shuffle:
-            self.ordering = np.array_split(np.arange(len(dataset)),
-                                           range(batch_size, len(dataset), batch_size))
+        arange = np.arange(len(dataset))
+        if self.shuffle:
+            np.random.shuffle(arange)
+            self.ordering = np.array_split(arange, range(batch_size, len(dataset), batch_size))
+        else:
+            self.ordering = np.array_split(arange, range(batch_size, len(dataset), batch_size))
 
     def __iter__(self):
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        self.idx = 0
         return self
 
     def __next__(self):
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        if self.idx == len(self.ordering):
+            raise StopIteration
+        samples = [Tensor(x) for x in self.dataset[self.ordering[self.idx]]]
+        self.idx += 1
+        return tuple(samples)
 
 
 class MNISTDataset(Dataset):
