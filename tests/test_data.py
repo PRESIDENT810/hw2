@@ -297,8 +297,6 @@ def test_dataloader_ndarray():
       for i, batch in enumerate(train_dataloader):
         batch_x  = batch[0].numpy()
         truth_x = train_dataset[i * batch_size:(i + 1) * batch_size][0].reshape((batch_size,10,10))
-        if truth_x.shape != batch_x.shape:
-            exit(0)
         np.testing.assert_allclose(truth_x, batch_x)
 
     batch_size = 1
