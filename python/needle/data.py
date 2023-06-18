@@ -120,25 +120,29 @@ class DataLoader:
 
 
 class MNISTDataset(Dataset):
+    X: np.ndarray
+    y: np.ndarray
+    size: int
+
     def __init__(
             self,
             image_filename: str,
             label_filename: str,
             transforms: Optional[List] = None,
     ):
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        super().__init__(transforms)
+        self.X, self.y = parse_mnist(image_filename, label_filename)
+        self.X = self.X.reshape((-1, 28, 28, 1))
+        self.size = self.y.shape[0]
 
     def __getitem__(self, index) -> object:
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        image = self.X[index]
+        image = self.apply_transforms(image)
+        label = self.y[index]
+        return image, label
 
     def __len__(self) -> int:
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        return self.size
 
 
 class NDArrayDataset(Dataset):
