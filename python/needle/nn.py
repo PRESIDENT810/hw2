@@ -115,7 +115,6 @@ class Flatten(Module):
         return ops.reshape(X, (shape[0], int(total / shape[0])))
 
 
-
 class ReLU(Module):
     def forward(self, x: Tensor) -> Tensor:
         return ops.relu(x)
@@ -227,7 +226,7 @@ class Dropout(Module):
         if not self.training:  # Testing phase
             return x
         else:  # Training phase
-            mask = init.randb(*x.shape) / (1-self.p)
+            mask = init.randb(*x.shape, p=(1 - self.p)) / (1 - self.p)
             return x * mask
 
 
