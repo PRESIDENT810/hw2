@@ -47,7 +47,7 @@ def epoch(dataloader: ndl.data.DataLoader, model: ndl.nn.Module, opt: Optional[n
     else:
         model.train()
 
-    for batch in iter(dataloader):
+    for batch in dataloader:
         X, y = batch
         output = model(X)
         loss = ndl.nn.SoftmaxLoss().forward(output, y)
