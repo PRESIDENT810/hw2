@@ -49,24 +49,47 @@ def epoch(dataloader: ndl.data.DataLoader, model: ndl.nn.Module, opt: Optional[n
 
     for batch in iter(dataloader):
         X, y = batch
-        logits = model(X)
-        loss = ndl.nn.SoftmaxLoss().forward(logits, y)
+        output = model(X)
+        loss = ndl.nn.SoftmaxLoss().forward(output, y)
         losses.append(loss.cached_data)
-        loss.backward()
         # Update weights
         if opt is not None:
+            loss.backward()
             opt.step()
-        hit += (y.cached_data == X.cached_data.argmax(axis=1)).sum()
+        hit += (y.cached_data == output.cached_data.argmax(axis=1)).sum()
         total += y.shape[0]
-    return np.average(np.array(losses)), hit / total
+    return (total - hit) / total, np.average(np.array(losses))
 
 
 def train_mnist(batch_size=100, epochs=10, optimizer=ndl.optim.Adam,
                 lr=0.001, weight_decay=0.001, hidden_dim=100, data_dir="data"):
     np.random.seed(4)
-    ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
-    ### END YOUR SOLUTION
+    train_dataset = ndl.data.MNISTDataset(
+        data_dir + '/train-images-idx3-ubyte.gz',
+        data_dir + '/train-labels-idx1-ubyte.gz'
+    )
+    test_dataset = ndl.data.MNISTDataset(
+        data_dir + '/t10k-images-idx3-ubyte.gz',
+        data_dir + '/t10k-labels-idx1-ubyte.gz',
+    )
+    train_dataloader = ndl.data.DataLoader(train_dataset, batch_size, True)
+    test_dataloader = ndl.data.DataLoader(test_dataset, batch_size)
+    model = MLPResNet(28 * 28 * 1, hidden_dim=hidden_dim)
+
+    train_acc, train_avg_loss, test_acc, test_avg_loss = None, None, None, None
+
+    # Train ResNet
+    if optimizer is not None:
+        opt = optimizer(params=model.parameters(), lr=lr, weight_decay=weight_decay)
+        for e in range(epochs):
+            train_acc, train_avg_loss = epoch(train_dataloader, model, opt)
+            print("train_acc={}, train_avg_loss={}".format(train_acc, train_avg_loss))
+
+    # Test ResNet
+    for e in range(epochs):
+        test_acc, test_avg_loss = epoch(test_dataloader, model)
+
+    return train_acc, train_avg_loss, test_acc, test_avg_loss
 
 
 if __name__ == "__main__":

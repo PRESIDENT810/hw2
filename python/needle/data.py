@@ -142,7 +142,7 @@ class MNISTDataset(Dataset):
         image = self.X[index]
         image = self.apply_transforms(image)
         label = self.y[index]
-        return image, label
+        return image.reshape(-1, 28 * 28 * 1), label
 
     def __len__(self) -> int:
         return self.size

@@ -115,6 +115,8 @@ def add_scalar(a, scalar):
 
 class EWiseMul(TensorOp):
     def compute(self, a: NDArray, b: NDArray):
+        if a.shape != b.shape:
+            exit(1)
         assert (a.shape == b.shape)
         return a * b
 
