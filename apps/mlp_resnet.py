@@ -79,11 +79,13 @@ def train_mnist(batch_size=100, epochs=10, optimizer=ndl.optim.Adam,
     train_acc, train_avg_loss, test_acc, test_avg_loss = None, None, None, None
 
     # Train ResNet
+    opt = None
     if optimizer is not None:
         opt = optimizer(params=model.parameters(), lr=lr, weight_decay=weight_decay)
-        for e in range(epochs):
-            train_acc, train_avg_loss = epoch(train_dataloader, model, opt)
-            # print("train_acc={}, train_avg_loss={}".format(train_acc, train_avg_loss))
+
+    for e in range(epochs):
+        train_acc, train_avg_loss = epoch(train_dataloader, model, opt)
+        # print("train_acc={}, train_avg_loss={}".format(train_acc, train_avg_loss))
 
     # Test ResNet
     for e in range(epochs):
