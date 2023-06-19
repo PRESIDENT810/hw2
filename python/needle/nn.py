@@ -149,10 +149,10 @@ class BatchNorm1d(Module):
         self.dim = dim
         self.eps = eps
         self.momentum = momentum
-        self.weight = Parameter(init.ones(1, dim, requires_grad=True))
-        self.bias = Parameter(init.zeros(1, dim, requires_grad=True))
-        self.running_mean = init.zeros(1, dim, requires_grad=True).reshape(dim)
-        self.running_var = init.ones(1, dim, requires_grad=True).reshape(dim)
+        self.weight = Parameter(init.ones(1, dim, requires_grad=True, device=device, dtype=dtype))
+        self.bias = Parameter(init.zeros(1, dim, requires_grad=True, device=device, dtype=dtype))
+        self.running_mean = init.zeros(1, dim, requires_grad=True, device=device, dtype=dtype).reshape(dim)
+        self.running_var = init.ones(1, dim, requires_grad=True, device=device, dtype=dtype).reshape(dim)
 
     def forward(self, x: Tensor) -> Tensor:
         mean = ops.summation(x, axes=0)
@@ -194,8 +194,8 @@ class LayerNorm1d(Module):
         super().__init__()
         self.dim = dim
         self.eps = eps
-        self.weight = Parameter(init.ones(1, dim, requires_grad=True))
-        self.bias = Parameter(init.zeros(1, dim, requires_grad=True))
+        self.weight = Parameter(init.ones(1, dim, requires_grad=True, device=device, dtype=dtype))
+        self.bias = Parameter(init.zeros(1, dim, requires_grad=True, device=device, dtype=dtype))
 
     def forward(self, x: Tensor) -> Tensor:
         mean = ops.summation(x, axes=1)

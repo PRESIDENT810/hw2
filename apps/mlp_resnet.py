@@ -40,7 +40,7 @@ def epoch(dataloader: ndl.data.DataLoader, model: ndl.nn.Module, opt: Optional[n
     np.random.seed(4)
 
     losses = []
-    hit = 0
+    wrong = 0
     total = 0
     if opt is None:
         model.eval()
@@ -56,9 +56,9 @@ def epoch(dataloader: ndl.data.DataLoader, model: ndl.nn.Module, opt: Optional[n
         if opt is not None:
             loss.backward()
             opt.step()
-        hit += (y.cached_data == output.cached_data.argmax(axis=1)).sum()
+        wrong += (y.numpy() != output.numpy().argmax(axis=1)).sum()
         total += y.shape[0]
-    return (total - hit) / total, np.average(np.array(losses))
+    return wrong / total, np.average(np.array(losses))
 
 
 def train_mnist(batch_size=100, epochs=10, optimizer=ndl.optim.Adam,
@@ -83,7 +83,7 @@ def train_mnist(batch_size=100, epochs=10, optimizer=ndl.optim.Adam,
         opt = optimizer(params=model.parameters(), lr=lr, weight_decay=weight_decay)
         for e in range(epochs):
             train_acc, train_avg_loss = epoch(train_dataloader, model, opt)
-            print("train_acc={}, train_avg_loss={}".format(train_acc, train_avg_loss))
+            # print("train_acc={}, train_avg_loss={}".format(train_acc, train_avg_loss))
 
     # Test ResNet
     for e in range(epochs):

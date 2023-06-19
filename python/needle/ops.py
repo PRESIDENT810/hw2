@@ -185,7 +185,7 @@ class DivScalar(TensorOp):
 
     def gradient(self, out_grad, node):
         a: Tensor = node.inputs[0]
-        return (Tensor(array_api.ones(a.shape)) / self.scalar) * out_grad
+        return divide_scalar(out_grad , self.scalar)
 
 
 def divide_scalar(a, scalar):
@@ -198,11 +198,9 @@ class Transpose(TensorOp):
 
     def compute(self, a: NDArray) -> NDArray:
         axes: NDArray = array_api.arange(len(a.shape))
-        if self.axes is not None:
-            axes[self.axes[0]], axes[self.axes[1]] = axes[self.axes[1]], axes[self.axes[0]]
-        else:
-            axes[-1], axes[-2] = axes[-2], axes[-1]
-        return array_api.transpose(a, axes=axes)
+        if self.axes is None:  # defaults to the last two axes
+            self.axes = (-2, -1)
+        return array_api.swapaxes(a, self.axes[0], self.axes[1])
 
     def gradient(self, out_grad, node):
         return transpose(out_grad, self.axes)
@@ -341,7 +339,10 @@ def relu(a):
 
 class LogSumExp(TensorOp):
     def __init__(self, axes: Optional[tuple] = None):
-        self.axes = axes
+        if isinstance(axes, int):
+            self.axes = (axes, )
+        else:
+            self.axes = axes
 
     def compute(self, Z):
         max_z = array_api.max(Z, axis=self.axes)
